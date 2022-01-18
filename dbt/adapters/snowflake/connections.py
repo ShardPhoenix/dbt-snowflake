@@ -38,6 +38,7 @@ class SnowflakeCredentials(Credentials):
     authenticator: Optional[str] = None
     private_key_path: Optional[str] = None
     private_key_passphrase: Optional[str] = None
+    private_key_bytes: Optional[bytes] = None
     token: Optional[str] = None
     oauth_client_id: Optional[str] = None
     oauth_client_secret: Optional[str] = None
@@ -174,20 +175,28 @@ class SnowflakeCredentials(Credentials):
         return result_json['access_token']
 
     def _get_private_key(self):
-        """Get Snowflake private key by path or None."""
-        if not self.private_key_path:
+        """Get Snowflake private key or None."""
+        if not self.private_key_path and not self.private_key_bytes:
             return None
+
+        if self.private_key_path and self.private_key_bytes:
+            warn_or_error("Supply at most one of private_key_path or private_key_bytes")
 
         if self.private_key_passphrase:
             encoded_passphrase = self.private_key_passphrase.encode()
         else:
             encoded_passphrase = None
 
-        with open(self.private_key_path, 'rb') as key:
-            p_key = serialization.load_pem_private_key(
-                key.read(),
-                password=encoded_passphrase,
-                backend=default_backend())
+        if self.private_key_bytes:
+            key_bytes = self.private_key_bytes
+        else:
+            with open(self.private_key_path, 'rb') as key:
+                key_bytes = key.read()
+
+        p_key = serialization.load_pem_private_key(
+            key_bytes,
+            password=encoded_passphrase,
+            backend=default_backend())
 
         return p_key.private_bytes(
             encoding=serialization.Encoding.DER,
