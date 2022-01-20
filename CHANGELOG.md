@@ -1,5 +1,11 @@
 ## dbt-snowflake 1.0.0 (Release TBD)
 
+## dbt-snowflake 1.0.0rc3 (January 20, 2022)
+
+## Features
+
+Snowflake private keys can now be passed as bytes via the parameter `private_key_bytes` ([#40](https://github.com/dbt-labs/dbt-snowflake/issues/41))
+
 ## dbt-snowflake 1.0.0rc2 (November 24, 2021)
 
 ### Fixes
